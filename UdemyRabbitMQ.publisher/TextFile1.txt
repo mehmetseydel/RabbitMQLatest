@@ -1,0 +1,34 @@
+﻿
+
+ //rabbite baglan
+            var factory = new ConnectionFactory();
+            factory.Uri = new Uri("amqps://fxumfxbs:5LB0xRPojDDjeZoXQHo-nbz7qyjxIicE@hawk.rmq.cloudamqp.com/fxumfxbs");
+
+            //using scopelardan düşebiler o yerdeki
+            //baglantı aç
+            using var connection = factory.CreateConnection();
+
+            //kanal aç
+            var channel = connection.CreateModel();
+
+            //kuyruk aç publisherda 
+            //normalde exchange varsa butaya gerek kalmaz
+
+            channel.QueueDeclare("hello-queue", true, false, false);
+
+            Enumerable.Range(1,50).ToList().ForEach(x=>
+            
+            {
+                //mesaj için byte olur genelde
+                string message = $"Message {x}";
+                var messageBody = Encoding.UTF8.GetBytes(message);
+                channel.BasicPublish(string.Empty, "hello-queue", null, messageBody);
+
+                Console.WriteLine($"Mesaj gönderilmiştir :{message}");
+
+
+            });
+
+            
+
+            Console.ReadLine();

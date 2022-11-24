@@ -1,0 +1,29 @@
+﻿var factory = new ConnectionFactory();
+            factory.Uri = new Uri("amqps://fxumfxbs:5LB0xRPojDDjeZoXQHo-nbz7qyjxIicE@hawk.rmq.cloudamqp.com/fxumfxbs");
+
+            
+            using var connection = factory.CreateConnection();
+
+           
+            var channel = connection.CreateModel();
+            //true olursa restart olursa exchange kaybolur!
+            channel.ExchangeDeclare("logs-fanout",type:ExchangeType.Fanout,durable:true);
+             
+            Enumerable.Range(1,50).ToList().ForEach(x=>
+            
+            {
+                
+                string message = $"Log {x}";
+                var messageBody = Encoding.UTF8.GetBytes(message);
+                //string.empty olanı exchange verduk logs-fanout
+                //kuyruga gerek yok boş verdık hello-queue için
+                channel.BasicPublish("logs-fanout", "", null, messageBody);
+
+                Console.WriteLine($"Mesaj gönderilmiştir :{message}");
+
+
+            });
+
+            
+
+            Console.ReadLine();

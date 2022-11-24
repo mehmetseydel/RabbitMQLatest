@@ -1,0 +1,33 @@
+﻿var factory = new ConnectionFactory();
+            factory.Uri = new Uri("amqps://fxumfxbs:5LB0xRPojDDjeZoXQHo-nbz7qyjxIicE@hawk.rmq.cloudamqp.com/fxumfxbs");
+
+             
+            using var connection = factory.CreateConnection();
+
+            var channel = connection.CreateModel();
+
+
+            var randomQueueName = channel.QueueDeclare().QueueName;
+                
+            channel.QueueBind(randomQueueName,"logs-fanout", "", null);
+
+
+            channel.BasicQos(0,1, true);
+
+            var consumer = new EventingBasicConsumer(channel);
+            
+            channel.BasicConsume(randomQueueName, false, consumer);
+            Console.WriteLine("Logları dinleniyor...");
+
+
+            consumer.Received += (object sender, BasicDeliverEventArgs e) =>
+            {
+                var message = Encoding.UTF8.GetString(e.Body.ToArray());
+                Thread.Sleep(1500);
+                Console.WriteLine("Gelen mesaj:" + message);
+
+                channel.BasicAck(e.DeliveryTag, false);
+            };
+
+
+            Console.ReadLine();

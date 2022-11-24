@@ -1,0 +1,41 @@
+﻿ //rabbite baglan
+            var factory = new ConnectionFactory();
+            factory.Uri = new Uri("amqps://fxumfxbs:5LB0xRPojDDjeZoXQHo-nbz7qyjxIicE@hawk.rmq.cloudamqp.com/fxumfxbs");
+
+            //using scopelardan düşebiler o yerdeki
+            //baglantı aç
+            using var connection = factory.CreateConnection();
+
+            //kanal aç
+            var channel = connection.CreateModel();
+
+            //kuyruk aç burası publisherda yoksa burdada oluşturabilirsin!
+            //channel.QueueDeclare("hello-queue", true, false, false);
+
+
+              //kalıcı kalması için 
+            channel.QueueDeclare(randomQueueName,true,false,false);
+
+
+            //banaherhangi bir boyutta mesajgelsin
+            //her abaom-neye 5.5
+            //true olursa toplamı 5 eder
+            //false olursa herbiri 5 olur
+            channel.BasicQos(0,10, true);
+
+            //subscribe=consumer
+            var consumer = new EventingBasicConsumer(channel);
+            //false kuyruktan silme demek ben haber ederim her zaman false normalde
+            channel.BasicConsume("hello-queue", false, consumer);
+
+            consumer.Received += (object sender, BasicDeliverEventArgs e) =>
+            {
+                var message = Encoding.UTF8.GetString(e.Body.ToArray());
+                Thread.Sleep(1500);
+                Console.WriteLine("Gelen mesaj:" + message);
+
+                channel.BasicAck(e.DeliveryTag, false);
+            };
+
+
+            Console.ReadLine();
